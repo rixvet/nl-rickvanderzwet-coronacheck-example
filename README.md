@@ -33,3 +33,16 @@ Usage
 Misc
 ====
 The folder `testdata` contains some sample certificates which are signed by dummy 'testPk' issuer
+```
+$ go run main.go testdata/qrcode1.sample 
+{
+  "birthDay": "20",
+  "birthMonth": "10",
+  "firstNameInitial": "A",
+  "isPaperProof": "0",
+  "isSpecimen": "0",
+  "lastNameInitial": "R",
+  "validForHours": "24",
+  "validFrom": "1628510400"
+}
+```
