@@ -12,8 +12,13 @@ import (
 )
 
 
-func PrettyPrint(v interface{}) (err error) {
-	b, err := json.MarshalIndent(v, "", "  ")
+func PrettyPrint(v interface{}, created int64) (err error) {
+	data := map[string]interface{}{
+		"created": created,
+		"attributes": v,
+	}
+	
+	b, err := json.MarshalIndent(data, "", "  ")
 	if err == nil {
 	fmt.Println(string(b))
 	}
@@ -54,7 +59,7 @@ func main() {
 	}
 
 	/* Display */
-	PrettyPrint(verifiedCred.Attributes)
+	PrettyPrint(verifiedCred.Attributes, verifiedCred.DisclosureTimeSeconds)
 }
 
 
