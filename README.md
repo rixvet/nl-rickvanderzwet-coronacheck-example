@@ -3,18 +3,52 @@ Intro
 View attribute details of Dutch QR Code (prefixed NL2:) produced by CoronaCheck App
 
 
-Setup
-=====
+Setup (optional)
+================
+Note: Certicates already included for convience, to replicate the process
+
+
+- Download 'Staat der Nederlanden EV Root CA' root certificate:
+```
+	# Note: Convience shortcut, get yourself a trusted/verified copy
+	# somehow, one can never sure if the right is presented this way :-)
+	# Also check with https://zoek.officielebekendmakingen.nl/stcrt-2011-527.html
+	$ curl http://cert.pkioverheid.nl/EVRootCA.cer > EVRootCA.cer
+```
+
+- Convert 'Staat der Nederlanden EV Root CA' to format usable with verify command
+```
+	$ openssl x509 -in ./EVRootCA.cer -inform DER -out ./EVRootCA.pem
+```
+
+
 - Download VWS signing public keys:
 ```
 	$ curl https://holder-api.coronacheck.nl/v4/holder/public_keys > public_keys
-	$ # TODO: Validate authenticity of file
 ```
-- Export/Parse VWS:
+
+
+- Split payload and signature:
 ```
-	$ cat public_keys | jq -r .payload | base64 -d  > public_keys.dec
-	$ cat public_keys.dec | jq -r '.cl_keys | .[] | select(.id == "VWS-CC-1") | .public_key' | base64 -d > VWS-CC-1.xml
-	$ cat public_keys.dec | jq -r '.cl_keys | .[] | select(.id == "VWS-CC-2") | .public_key' | base64 -d > VWS-CC-2.xml
+	$ cat public_keys | jq -r .payload | base64 -d > public_keys.payload
+	$ cat public_keys | jq -r .signature | base64 -d > public_keys.signature
+```
+
+
+- Verify downloaded content:
+```
+	$ openssl cms  -verify -inform DER -in ./public_keys.signature \
+	    -content ./public_keys.payload -purpose any \
+	    -CAfile ./EVRootCA.pem  -CApath /var/empty > /dev/null
+```
+
+
+- [only if validation is OK] Export/Parse VWS:
+```
+	$ cat public_keys.payload | jq -r '.cl_keys | .[] | \
+	     select(.id == "VWS-CC-1") | .public_key' | base64 -d > VWS-CC-1.xml
+	$ cat public_keys.payload | jq -r '.cl_keys | .[] | \
+	     select(.id == "VWS-CC-2") | .public_key' | base64 -d > VWS-CC-2.xml
 ```
 
 
